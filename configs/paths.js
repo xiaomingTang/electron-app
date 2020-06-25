@@ -1,0 +1,15 @@
+const path = require("path")
+
+const appRoot = path.resolve(__dirname, "../")
+
+const Paths = {
+  Root: appRoot,
+  Output: path.resolve(appRoot, ".app"),
+  Src: path.resolve(appRoot, "src"),
+  Main: path.resolve(appRoot, "src/main"),
+  Renderer: path.resolve(appRoot, "src/renderer"),
+  MainEntry: path.resolve(appRoot, "src/main/background.ts"),
+  RendererEntry: path.resolve(appRoot, "src/renderer/app.tsx"),
+}
+
+module.exports = Paths
