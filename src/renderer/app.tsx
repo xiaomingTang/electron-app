@@ -126,7 +126,7 @@ function TimeCounter({ date }: { date: Date }) {
 }
 
 function App() {
-  const userData = useMemo(() => new UserData("_timer.json", true), [])
+  const userData = useMemo(() => new UserData("userData/timers.json", true), [])
   const [shutdownDate, setShutdownDate] = useState(defaultShutdownDate)
   const [curIdx, setCurIdx] = useState(-1)
 
@@ -216,10 +216,10 @@ function App() {
   return <List style={{ padding: "14px" }}>
     <TimeCounter date={shutdownDate} />
 
-    <Button // 新增关机计划
+    <Button // 新增定时关机计划
       type="primary"
       style={{ width: "5em", marginRight: "1em" }}
-      title="新增关机计划"
+      title="新增定时关机计划"
       onClick={() => {
         setData(datas.length)({
           enabled: false,
