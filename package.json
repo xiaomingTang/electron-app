@@ -2,14 +2,14 @@
   "name": "shutdown-on-time",
   "productName": "定时关机",
   "description": "定时关机",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "author": "1038761793@qq.com",
   "copyright": "1038761793@qq.com",
   "homepage": "https://github.com/xiaomingTang/",
   "main": ".app/background.js",
   "build": {
-    "appId": "com.example.shutdown-on-time",
+    "appId": "com.examples.shutdown-on-time",
     "files": [
       ".app/**/*",
       "node_modules/**/*",
@@ -20,10 +20,13 @@
     },
     "publish": null,
     "win": {
-      "target": "nsis-web"
+      "target": "nsis"
     },
-    "nsisWeb": {
-      "appPackageUrl": "https://npm.taobao.org/mirrors/electron-builder-binaries/winCodeSign-2.6.0/winCodeSign-2.6.0.7z"
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
     }
   },
   "scripts": {
