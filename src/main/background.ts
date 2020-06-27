@@ -7,7 +7,6 @@ import { devMenuTemplate } from "@Main/menu/devMenuTemplate"
 import { editMenuTemplate } from "@Main/menu/editMenuTemplate"
 import createWindow from "@Main/helpers/createWindow"
 import "@Main/helpers/reloadAppOnChanged"
-import { confirm } from "@Src/utils"
 
 if (!isProduction) {
   // Save userData in separate folders for each environment.
@@ -44,17 +43,8 @@ app.on("ready", () => {
     }),
   )
 
-  const { wasOpenedAtLogin } = app.getLoginItemSettings()
-
   if (!isProduction) {
     mainWindow.webContents.openDevTools()
-  } else if (!wasOpenedAtLogin) {
-    if (confirm("本应用需要开机自启动, 点击'是'将会尝试开启(可能会失败), 你也可以稍后自行开启")) {
-      app.setLoginItemSettings({
-        openAtLogin: true,
-        openAsHidden: false,
-      })
-    }
   }
 })
 

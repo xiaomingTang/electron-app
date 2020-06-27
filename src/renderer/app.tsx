@@ -2,22 +2,29 @@ import React, {
   useState, useEffect, useCallback, useMemo,
 } from "react"
 import ReactDOM from "react-dom"
-import { shell, remote } from "electron"
+import { shell, remote, app } from "electron"
 import moment from "moment"
 import { useRaf } from "react-use"
+import AutoLaunch from "auto-launch"
 import {
   TimePicker, Button, Checkbox, List, Space, Menu, Dropdown, message, Modal, Alert,
 } from "antd"
 import PlusOutlined from "@ant-design/icons/PlusOutlined"
 import CloseOutlined from "@ant-design/icons/CloseOutlined"
-import DownOutlined from "@ant-design/icons/DownOutlined"
+import ExclamationOutlined from "@ant-design/icons/ExclamationOutlined"
+import ExclamationCircleOutlined from "@ant-design/icons/ExclamationCircleOutlined"
+import CheckOutlined from "@ant-design/icons/CheckOutlined"
 
 import { shutdownAfter, cancelShutdown } from "@Main/cmd"
 import "@Renderer/helpers/contextMenu"
-import { confirm, formatFullTime } from "@Src/utils"
+import {
+  confirm, formatFullTime,
+  // getLoginItemSettings, setLoginItemSettings,
+} from "@Src/utils"
 import UserData from "./helpers/userData"
 
 import "./app.less"
+import useAutoLaunch from "./helpers/useAutoLaunch"
 
 function Link({
   href, onClick, children, ...props
@@ -110,17 +117,53 @@ function Timer({
   </div>
 }
 
+function OpenAtLoginButton() {
+  const [openAtLogin, setOpenAtLogin] = useAutoLaunch()
+
+  return <Button
+    type="text"
+    danger={!openAtLogin}
+    shape="circle"
+    title={openAtLogin ? "应用正常运行" : "您尚未启用 开机自启动, 点击查看更多..."}
+    onClick={() => {
+      const msg = openAtLogin
+        ? "应用已开启 开机自启动\n点击 '是' 将尝试为您【关闭】\n但【不建议】您这么做"
+        : "建议开启 开机自启动\n点击'是'将尝试为您【开启】\n您也可以自行手动开启"
+      const newVal = !openAtLogin
+      if (confirm(msg)) {
+        setOpenAtLogin(newVal)
+          .then(() => {
+            message.success(newVal ? "已开启" : "已关闭", 0.5)
+          })
+          .catch((err) => {
+            message.error(<>
+              <p>{newVal ? "开启" : "关闭"}失败:</p>
+              <p>{err.message}</p>
+            </>)
+          })
+      }
+    }}
+  >
+    {
+      openAtLogin ? <CheckOutlined style={{ color: "#1890FF" }} /> : <ExclamationCircleOutlined />
+    }
+  </Button>
+}
+
 const defaultShutdownDate = new Date(new Date().getTime() - 1000)
 
 function TimeCounter({ date }: { date: Date }) {
-  const durationSec = Math.floor((date.getTime() - new Date().getTime()) / 1000)
+  const durationSec = useMemo(() => Math.floor((date.getTime() - new Date().getTime()) / 1000), [date])
 
   useRaf(durationSec * 1000)
 
   return <Alert
     type="warning"
     closable={false}
-    message={durationSec >= 0 ? `将会在 ${formatFullTime(durationSec)} 后关机` : "无定时关机任务"}
+    message={durationSec >= 0
+      ? <>{`将会在 ${formatFullTime(durationSec)} 后关机`}<OpenAtLoginButton /></>
+      : <>{"无定时关机任务"}<OpenAtLoginButton /></>
+    }
     style={{ marginBottom: "8px" }}
   />
 }
@@ -163,18 +206,14 @@ function App() {
           </>)
         })
       } else {
-        cancelShutdown().then((res) => {
-          if (res) {
-            setShutdownDate(defaultShutdownDate)
-            setCurIdx(-1)
-          }
+        cancelShutdown().then(() => {
+          setShutdownDate(defaultShutdownDate)
+          setCurIdx(-1)
         }).catch((err) => {
-          if (!err.message.includes("Unable to abort the system shutdown because no shutdown was in progress")) {
-            message.error(<>
-              <p>取消定时关机 时出错了:</p>
-              <p>{err.message}</p>
-            </>)
-          }
+          message.error(<>
+            <p>取消定时关机 时出错了:</p>
+            <p>{err.message}</p>
+          </>)
         })
       }
     }
@@ -235,18 +274,15 @@ function App() {
       type="default"
       danger
       onClick={() => {
-        cancelShutdown().then((res) => {
-          if (res) {
-            setShutdownDate(defaultShutdownDate)
-            setCurIdx(-1)
-          }
+        cancelShutdown().then(() => {
+          message.success("成功")
+          setCurIdx(-1)
+          setShutdownDate(defaultShutdownDate)
         }).catch((err) => {
-          if (!err.message.includes("Unable to abort the system shutdown because no shutdown was in progress")) {
-            message.error(<>
-              <p>取消定时关机 时出错了:</p>
-              <p>{err.message}</p>
-            </>)
-          }
+          message.error(<>
+            <p>取消定时关机 时出错了:</p>
+            <p>{err.message}</p>
+          </>)
         })
       }}
     >

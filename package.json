@@ -2,7 +2,7 @@
   "name": "shutdown-on-time",
   "productName": "定时关机",
   "description": "定时关机",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "private": true,
   "author": "1038761793@qq.com",
   "copyright": "1038761793@qq.com",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "antd": "^4.3.5",
+    "auto-launch": "^5.0.5",
     "electron-reload": "^1.5.0",
     "fs-jetpack": "^2.1.0",
     "iconv-lite": "^0.6.0",
@@ -51,6 +52,7 @@
     "react-use": "^15.3.0"
   },
   "devDependencies": {
+    "@types/auto-launch": "^5.0.1",
     "@types/react": "^16.9.39",
     "@types/react-dom": "^16.9.8",
     "@typescript-eslint/eslint-plugin": "^3.4.0",

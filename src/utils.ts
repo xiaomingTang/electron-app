@@ -1,4 +1,6 @@
-import { dialog, remote } from "electron"
+import {
+  dialog, remote,
+} from "electron"
 
 const envDialog = dialog || remote.dialog
 
