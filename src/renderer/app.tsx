@@ -3,6 +3,7 @@ import ReactDOM from "react-dom"
 import { shell } from "electron"
 
 import "@Src/renderer/helpers/contextMenu"
+import "./app.less"
 
 function Link({
   href, onClick, children, ...props

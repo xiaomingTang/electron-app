@@ -75,7 +75,7 @@ class Position implements Bounds {
 
 export default function createWindow(name: string, options: Electron.BrowserWindowConstructorOptions): BrowserWindow {
   const userDataDir = jetpack.cwd(app.getPath("userData"))
-  const stateStoreFile = `window-state-${name}.json`
+  const stateStoreFile = `userData/window-state-${name}.json`
 
   const position = new Position(options)
   let win: BrowserWindow

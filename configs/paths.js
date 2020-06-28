@@ -5,6 +5,7 @@ const appRoot = path.resolve(__dirname, "../")
 const Paths = {
   Root: appRoot,
   Output: path.resolve(appRoot, ".app"),
+  Public: path.resolve(appRoot, "public"),
   Src: path.resolve(appRoot, "src"),
   Main: path.resolve(appRoot, "src/main"),
   Renderer: path.resolve(appRoot, "src/renderer"),

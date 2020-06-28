@@ -28,7 +28,7 @@ app.on("ready", () => {
   setApplicationMenu()
 
   const mainWindow = createWindow("main", {
-    width: 1000,
+    width: isProduction ? 800 : 1000,
     height: 600,
     webPreferences: {
       nodeIntegration: true,
