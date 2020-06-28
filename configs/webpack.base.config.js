@@ -16,7 +16,7 @@ module.exports = {
   },
   output: {
     path: Paths.Output,
-    filename: "[name].[hash:5].js",
+    filename: "[name].js",
   },
   target: "electron-renderer",
   mode: isProduction ? "production" : "development",

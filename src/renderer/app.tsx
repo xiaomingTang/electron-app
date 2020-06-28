@@ -1,37 +1,58 @@
-import React from "react"
+import React, { createContext, useContext, useState } from "react"
 import ReactDOM from "react-dom"
-import { shell } from "electron"
+import {
+  HashRouter, Route, Link, Switch,
+} from "react-router-dom"
+import { Button } from "antd"
+import { PlusOutlined } from "@ant-design/icons"
 
 import "@Src/renderer/helpers/contextMenu"
 import "./app.less"
 
-function Link({
-  href, onClick, children, ...props
-}: React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>) {
-  const curUrl = new URL(window.location.href)
-  const tarUrl = new URL(href || "", window.location.href)
-  const isSameOrigin = curUrl.origin === tarUrl.origin
+const Ctx = createContext({
+  number: 1,
+})
 
-  const defaultOnclick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    if (isSameOrigin) { return }
-    event.preventDefault()
-    shell.openExternal(tarUrl.href)
-  }
-
-  return <a {...props} href={href} onClick={onClick || defaultOnclick}>{children}</a>
+function NotFound() {
+  return <p>
+    404 Not Found: 该地址不存在, 请重新确认您的地址, 或者<Link to="/">返回首页</Link>
+  </p>
 }
 
-function App() {
-  return <div>
-    <Link href="#text">#text</Link>
-    <p />
-    <Link href="https://www.baidu.com/">https://www.baidu.com/</Link>
-  </div>
+function SubHome() {
+  const { number } = useContext(Ctx)
+  return <>
+    here is SubHome: {number}
+  </>
+}
+
+function Home() {
+  const [number, setNumber] = useState(1)
+
+  return <Ctx.Provider value={{ number }}>
+    <div>
+      <p>
+        here is Home: {number}
+        <Button type="primary" onClick={() => setNumber((val) => val + 1)}>
+          <PlusOutlined />
+        </Button>
+      </p>
+      <p>
+        <SubHome />
+      </p>
+      link to a <Link to="/not-found">error page</Link>
+    </div>
+  </Ctx.Provider>
 }
 
 const container = document.querySelector("#app")
 
 ReactDOM.render(
-  <App />,
+  <HashRouter>
+    <Switch>
+      <Route path="/" exact component={Home} />
+      <Route component={NotFound} />
+    </Switch>
+  </HashRouter>,
   container,
 )
