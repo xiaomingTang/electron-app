@@ -2,6 +2,7 @@ const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin")
 const tsImportPluginFactory = require("ts-import-plugin")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 const definePlugin = require("./injectEnv")
 const Paths = require("./paths")
@@ -15,7 +16,7 @@ module.exports = {
   },
   output: {
     path: Paths.Output,
-    filename: "[name].js",
+    filename: "[name].[hash:5].js",
   },
   target: "electron-renderer",
   mode: isProduction ? "production" : "development",
@@ -77,10 +78,6 @@ module.exports = {
             options: {
               modules: true,
               localsConvention: "camelCaseOnly",
-              // namedExport: true,
-              // camelCase: true,
-              // minimize: true,
-              // localIdentName: "[local]_[hash:base64:5]",
             },
           },
           "less-loader",
@@ -98,5 +95,13 @@ module.exports = {
   plugins: [
     // new FriendlyErrorsWebpackPlugin({ clearConsole: !isProduction }),
     definePlugin,
+    new HtmlWebpackPlugin({ // 细节展示页
+      template: path.join(Paths.Public, "app.html"),
+      filename: "app.html",
+      title: "细节展示页",
+      inject: "body",
+      chunks: ["app"],
+      hash: true,
+    }),
   ]
 }
