@@ -95,10 +95,10 @@ module.exports = {
   plugins: [
     // new FriendlyErrorsWebpackPlugin({ clearConsole: !isProduction }),
     definePlugin,
-    new HtmlWebpackPlugin({ // 细节展示页
+    new HtmlWebpackPlugin({ // Home
       template: path.join(Paths.Public, "app.html"),
       filename: "app.html",
-      title: "细节展示页",
+      title: "Home",
       inject: "body",
       chunks: ["app"],
       hash: true,
