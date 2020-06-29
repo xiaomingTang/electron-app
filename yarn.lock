@@ -5998,6 +5998,11 @@ table@^5.2.3:
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
 
+tang-base-node-utils@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.npm.taobao.org/tang-base-node-utils/download/tang-base-node-utils-1.2.2.tgz#9a7cc8b8e190d37c736f666c6593749c076f948a"
+  integrity sha1-mnzIuOGQ03xzb2ZsZZN0nAdvlIo=
+
 tapable@^0.1.8:
   version "0.1.10"
   resolved "https://registry.npm.taobao.org/tapable/download/tapable-0.1.10.tgz#29c35707c2b70e50d07482b5d202e8ed446dafd4"

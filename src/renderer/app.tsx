@@ -1,13 +1,19 @@
-import React, { createContext, useContext, useState } from "react"
+import React, {
+  createContext, useContext, useState,
+} from "react"
 import ReactDOM from "react-dom"
 import {
   HashRouter, Route, Link, Switch,
 } from "react-router-dom"
 import { Button } from "antd"
-import { PlusOutlined } from "@ant-design/icons"
+import {
+  PlusOutlined,
+  UploadOutlined,
+} from "@ant-design/icons"
 
 import "@Src/renderer/helpers/contextMenu"
 import "./app.less"
+import { remote } from "electron"
 
 const Ctx = createContext({
   number: 1,
@@ -19,11 +25,20 @@ function NotFound() {
   </p>
 }
 
-function SubHome() {
-  const { number } = useContext(Ctx)
-  return <>
-    here is SubHome: {number}
-  </>
+function FileDroper() {
+  return <Button
+    onDragOver={(e) => {
+      e.preventDefault()
+    }}
+    onDrop={(e) => {
+      e.preventDefault();
+      [...e.dataTransfer.files].forEach((f) => {
+        console.log(f.path)
+      })
+    }}
+  >
+    drag and drop
+  </Button>
 }
 
 function Home() {
@@ -31,14 +46,21 @@ function Home() {
 
   return <Ctx.Provider value={{ number }}>
     <div>
+      <FileDroper />
+      <Button onClick={() => {
+        remote.dialog.showOpenDialog({
+          properties: ["multiSelections", "openFile", "showHiddenFiles", "treatPackageAsDirectory"],
+        }).then((result) => {
+          console.log(result.filePaths)
+        })
+      }}>
+        <UploadOutlined /> Click to Upload
+      </Button>
       <p>
         here is Home: {number}
         <Button type="primary" onClick={() => setNumber((val) => val + 1)}>
           <PlusOutlined />
         </Button>
-      </p>
-      <p>
-        <SubHome />
       </p>
       link to a <Link to="/not-found">error page</Link>
     </div>
