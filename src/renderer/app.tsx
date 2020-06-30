@@ -5,15 +5,13 @@ import ReactDOM from "react-dom"
 import {
   HashRouter, Route, Link, Switch,
 } from "react-router-dom"
-import { Button } from "antd"
+import { Button, Space } from "antd"
 import {
-  PlusOutlined,
-  UploadOutlined,
+  PlusOutlined, MinusOutlined,
 } from "@ant-design/icons"
 
 import "@Src/renderer/helpers/contextMenu"
 import "./app.less"
-import { remote } from "electron"
 
 const Ctx = createContext({
   number: 1,
@@ -21,49 +19,43 @@ const Ctx = createContext({
 
 function NotFound() {
   return <p>
-    404 Not Found: 该地址不存在, 请重新确认您的地址, 或者<Link to="/">返回首页</Link>
+    <p>
+      404 Not Found
+    </p>
+    <p>
+      该地址不存在, 请确认您的地址, 或者<Link to="/">返回首页</Link>
+    </p>
   </p>
 }
 
-function FileDroper() {
-  return <Button
-    onDragOver={(e) => {
-      e.preventDefault()
-    }}
-    onDrop={(e) => {
-      e.preventDefault();
-      [...e.dataTransfer.files].forEach((f) => {
-        console.log(f.path)
-      })
-    }}
-  >
-    drag and drop
-  </Button>
+function Comp() {
+  const { number } = useContext(Ctx)
+  return <p>
+    here is Child Component, and the number is {number};
+  </p>
 }
 
 function Home() {
   const [number, setNumber] = useState(1)
 
   return <Ctx.Provider value={{ number }}>
-    <div>
-      <FileDroper />
-      <Button onClick={() => {
-        remote.dialog.showOpenDialog({
-          properties: ["multiSelections", "openFile", "showHiddenFiles", "treatPackageAsDirectory"],
-        }).then((result) => {
-          console.log(result.filePaths)
-        })
-      }}>
-        <UploadOutlined /> Click to Upload
-      </Button>
-      <p>
-        here is Home: {number}
+    <p>
+      here is Home, the number is {number};
+    </p>
+    <p>
+      <Space>
+        <Button type="default" onClick={() => setNumber((val) => val - 1)}>
+          <MinusOutlined />
+        </Button>
         <Button type="primary" onClick={() => setNumber((val) => val + 1)}>
           <PlusOutlined />
         </Button>
-      </p>
-      link to a <Link to="/not-found">error page</Link>
-    </div>
+      </Space>
+    </p>
+    <Comp />
+    <p>
+      link to an <Link to="/not-found">error page</Link>
+    </p>
   </Ctx.Provider>
 }
 
