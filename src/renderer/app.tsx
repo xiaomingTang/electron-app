@@ -1,19 +1,22 @@
 import React, {
-  createContext, useContext, useState,
+  createContext, useEffect,
 } from "react"
 import ReactDOM from "react-dom"
 import {
   HashRouter, Route, Link, Switch,
 } from "react-router-dom"
+import { Base } from "tang-base-node-utils"
 import { Button } from "antd"
+import { useList } from "react-use"
+import fs from "fs"
 import {
-  PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons"
 
 import "@Src/renderer/helpers/contextMenu"
 import "./app.less"
 import { remote } from "electron"
+import { ResolvableHookState } from "react-use/lib/util/resolveHookState"
 
 const Ctx = createContext({
   number: 1,
@@ -25,45 +28,87 @@ function NotFound() {
   </p>
 }
 
-function FileDroper() {
-  return <Button
-    onDragOver={(e) => {
-      e.preventDefault()
-    }}
-    onDrop={(e) => {
-      e.preventDefault();
-      [...e.dataTransfer.files].forEach((f) => {
-        console.log(f.path)
-      })
-    }}
-  >
-    drag and drop
-  </Button>
+function unique<T>(arr: T[]): T[] {
+  return [
+    ...new Set(arr),
+  ]
 }
 
-function Home() {
-  const [number, setNumber] = useState(1)
-
-  return <Ctx.Provider value={{ number }}>
-    <div>
-      <FileDroper />
-      <Button onClick={() => {
+function FilepathDroper({ paths, setPaths }: {
+  paths: string[];
+  setPaths: (state: ResolvableHookState<string[]>) => void;
+}) {
+  return <>
+    <Button
+      onDragOver={(e) => {
+        e.preventDefault()
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        [...e.dataTransfer.items].forEach((item) => {
+          if (item.kind === "string" && item.type === "text/plain") {
+            item.getAsString((itemStr) => {
+              setPaths((prev) => unique([
+                ...prev,
+                ...itemStr.split("\n"),
+              ]))
+            })
+          }
+          if (item.kind === "file") {
+            const f = item.getAsFile()
+            if (f) {
+              if (typeof f.path === "string") {
+                setPaths((prev) => unique([
+                  ...prev,
+                  f.path,
+                ]))
+              } else {
+                setPaths((prev) => unique([
+                  ...prev,
+                  ...f.path,
+                ]))
+              }
+            }
+          }
+        })
+      }}
+      onClick={() => {
         remote.dialog.showOpenDialog({
           properties: ["multiSelections", "openFile", "showHiddenFiles", "treatPackageAsDirectory"],
         }).then((result) => {
-          console.log(result.filePaths)
+          if (result.filePaths.length > 0) {
+            setPaths((prev) => unique([
+              ...prev,
+              ...result.filePaths,
+            ]))
+          }
         })
-      }}>
-        <UploadOutlined /> Click to Upload
-      </Button>
-      <p>
-        here is Home: {number}
-        <Button type="primary" onClick={() => setNumber((val) => val + 1)}>
-          <PlusOutlined />
-        </Button>
-      </p>
-      link to a <Link to="/not-found">error page</Link>
-    </div>
+      }}
+    >
+      <UploadOutlined /> drag and drop
+    </Button>
+    {
+      paths.map((s) => (<p key={s}>{s}</p>))
+    }
+  </>
+}
+
+function Home() {
+  const [paths, pathsActions] = useList<string>([])
+
+  useEffect(() => {
+    if (paths) {
+      paths.forEach((p, i) => {
+        const { isFile, isDir } = new Base(p)
+        if (!isFile && !isDir) {
+          pathsActions.removeAt(i)
+        }
+      })
+    }
+  }, [paths, pathsActions])
+
+  return <Ctx.Provider value={{ number: 1 }}>
+    <FilepathDroper paths={paths} setPaths={pathsActions.set} />
   </Ctx.Provider>
 }
 
