@@ -1,6 +1,7 @@
 import {
   dialog, remote,
 } from "electron"
+import { useState } from "react"
 
 const envDialog = dialog || remote.dialog
 
@@ -30,3 +31,21 @@ export function formatFullTime(sec: number): string {
   if (min > 0) { return `${min} 分 ${realSec} 秒` }
   return `${realSec} 秒`
 }
+
+// @todos: use 中间件
+
+// type SetState<T> = React.Dispatch<React.SetStateAction<T>>
+// type UseFunc<T> = (val: T) => T
+
+// export function useMiddleWare<T>(setState: SetState<T>): {
+//   value: SetState<T>;
+//   use: UseFunc<T>;
+// } {
+//   const useFunc = (useArg: UseFunc<T>) => {
+
+//   }
+//   return {
+//     value: setState,
+//     use: (val) => val,
+//   }
+// }

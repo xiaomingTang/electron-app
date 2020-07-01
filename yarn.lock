@@ -6157,10 +6157,10 @@ table@^5.2.3:
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
 
-tang-base-node-utils@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.npm.taobao.org/tang-base-node-utils/download/tang-base-node-utils-1.2.2.tgz#9a7cc8b8e190d37c736f666c6593749c076f948a"
-  integrity sha1-mnzIuOGQ03xzb2ZsZZN0nAdvlIo=
+tang-base-node-utils@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.npm.taobao.org/tang-base-node-utils/download/tang-base-node-utils-1.2.4.tgz?cache=0&sync_timestamp=1593583334503&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ftang-base-node-utils%2Fdownload%2Ftang-base-node-utils-1.2.4.tgz#1379d062e525af061409d01bd162497b10c667fe"
+  integrity sha1-E3nQYuUlrwYUCdAb0WJJexDGZ/4=
 
 tapable@^0.1.8:
   version "0.1.10"

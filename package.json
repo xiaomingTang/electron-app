@@ -45,7 +45,7 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-use": "^15.3.2",
-    "tang-base-node-utils": "^1.2.2"
+    "tang-base-node-utils": "^1.2.4"
   },
   "devDependencies": {
     "@types/react": "^16.9.39",

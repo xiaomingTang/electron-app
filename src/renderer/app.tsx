@@ -1,22 +1,27 @@
 import React, {
-  createContext, useEffect,
+  createContext, useEffect, useMemo,
 } from "react"
 import ReactDOM from "react-dom"
 import {
   HashRouter, Route, Link, Switch,
 } from "react-router-dom"
-import { Base } from "tang-base-node-utils"
-import { Button } from "antd"
+import { Button, Input } from "antd"
 import { useList } from "react-use"
 import fs from "fs"
+
+import { remote } from "electron"
+import { ResolvableHookState } from "react-use/lib/util/resolveHookState"
+import path from "path"
+import { Base } from "tang-base-node-utils"
+
 import {
   UploadOutlined,
 } from "@ant-design/icons"
 
-import "@Src/renderer/helpers/contextMenu"
+import "@Renderer/helpers/contextMenu"
+import Rename from "@Renderer/rename"
+
 import "./app.less"
-import { remote } from "electron"
-import { ResolvableHookState } from "react-use/lib/util/resolveHookState"
 
 const Ctx = createContext({
   number: 1,
@@ -34,8 +39,7 @@ function unique<T>(arr: T[]): T[] {
   ]
 }
 
-function FilepathDroper({ paths, setPaths }: {
-  paths: string[];
+function FilepathDroper({ setPaths }: {
   setPaths: (state: ResolvableHookState<string[]>) => void;
 }) {
   return <>
@@ -50,7 +54,7 @@ function FilepathDroper({ paths, setPaths }: {
             item.getAsString((itemStr) => {
               setPaths((prev) => unique([
                 ...prev,
-                ...itemStr.split("\n"),
+                ...itemStr.replace(/\r/g, "").split("\n").map((p) => path.normalize(p)),
               ]))
             })
           }
@@ -60,12 +64,12 @@ function FilepathDroper({ paths, setPaths }: {
               if (typeof f.path === "string") {
                 setPaths((prev) => unique([
                   ...prev,
-                  f.path,
+                  path.normalize(f.path),
                 ]))
               } else {
                 setPaths((prev) => unique([
                   ...prev,
-                  ...f.path,
+                  ...[...f.path].map((p) => path.normalize(p)),
                 ]))
               }
             }
@@ -87,28 +91,37 @@ function FilepathDroper({ paths, setPaths }: {
     >
       <UploadOutlined /> drag and drop
     </Button>
-    {
-      paths.map((s) => (<p key={s}>{s}</p>))
-    }
   </>
+}
+
+const renameMap: Record<string, Rename> = {}
+function geneRename(p: string): Rename {
+  if (!renameMap[p]) {
+    const newRename = new Rename(p)
+    renameMap[p] = newRename
+    return newRename
+  }
+  return renameMap[p]
 }
 
 function Home() {
   const [paths, pathsActions] = useList<string>([])
+  // const bases = useMemo(() => paths.map((p) => geneRename(p)), [paths])
 
   useEffect(() => {
     if (paths) {
-      paths.forEach((p, i) => {
-        const { isFile, isDir } = new Base(p)
-        if (!isFile && !isDir) {
-          pathsActions.removeAt(i)
-        }
-      })
+      const newPaths = paths.filter((p) => fs.existsSync(p))
+      if (newPaths.length !== paths.length) {
+        pathsActions.set(newPaths)
+      }
     }
   }, [paths, pathsActions])
 
   return <Ctx.Provider value={{ number: 1 }}>
-    <FilepathDroper paths={paths} setPaths={pathsActions.set} />
+    <FilepathDroper setPaths={pathsActions.set} />
+    {
+      paths.map((p) => (<p key={p}>{p}</p>))
+    }
   </Ctx.Provider>
 }
 
