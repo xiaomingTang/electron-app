@@ -5,17 +5,17 @@ import ReactDOM from "react-dom"
 import {
   HashRouter, Route, Link, Switch,
 } from "react-router-dom"
-import { Button, Input } from "antd"
+import { Button, Space } from "antd"
 import { useList } from "react-use"
 import fs from "fs"
-
 import { remote } from "electron"
 import { ResolvableHookState } from "react-use/lib/util/resolveHookState"
 import path from "path"
 import { Base } from "tang-base-node-utils"
+import isEqual from "lodash/isEqual"
 
 import {
-  UploadOutlined,
+  UploadOutlined, FileTextFilled, FolderFilled,
 } from "@ant-design/icons"
 
 import "@Renderer/helpers/contextMenu"
@@ -54,7 +54,7 @@ function FilepathDroper({ setPaths }: {
             item.getAsString((itemStr) => {
               setPaths((prev) => unique([
                 ...prev,
-                ...itemStr.replace(/\r/g, "").split("\n").map((p) => path.normalize(p)),
+                ...itemStr.replace(/\r/g, "").split("\n"),
               ]))
             })
           }
@@ -64,12 +64,12 @@ function FilepathDroper({ setPaths }: {
               if (typeof f.path === "string") {
                 setPaths((prev) => unique([
                   ...prev,
-                  path.normalize(f.path),
+                  f.path,
                 ]))
               } else {
                 setPaths((prev) => unique([
                   ...prev,
-                  ...[...f.path].map((p) => path.normalize(p)),
+                  ...f.path,
                 ]))
               }
             }
@@ -105,13 +105,19 @@ function geneRename(p: string): Rename {
 }
 
 function Home() {
-  const [paths, pathsActions] = useList<string>([])
-  // const bases = useMemo(() => paths.map((p) => geneRename(p)), [paths])
+  const [paths, pathsActions] = useList<string>([
+    "C:/Users/ciro/Desktop/electron-app/src/renderer/app.tsx",
+    "C:/Users/ciro/Desktop/electron-app/src/renderer/app.less",
+    "C:/Users/ciro/Desktop/electron-app/src/renderer/helpers",
+    "C:/Users/ciro/Desktop/electron-app/src/renderer",
+  ])
+  const renames = useMemo(() => paths.map((p) => geneRename(p)), [paths])
 
   useEffect(() => {
     if (paths) {
-      const newPaths = paths.filter((p) => fs.existsSync(p))
-      if (newPaths.length !== paths.length) {
+      const newPaths = paths.map((p) => path.normalize(p).replace(/\\/g, "/")).filter((p) => fs.existsSync(p))
+      if (!isEqual(newPaths, paths)) {
+        console.log("set")
         pathsActions.set(newPaths)
       }
     }
@@ -119,8 +125,16 @@ function Home() {
 
   return <Ctx.Provider value={{ number: 1 }}>
     <FilepathDroper setPaths={pathsActions.set} />
+    <p></p>
     {
-      paths.map((p) => (<p key={p}>{p}</p>))
+      renames.map((rename) => (<Space key={rename.base.path}>
+        {
+          rename.base.isFile
+            ? <FileTextFilled />
+            : <FolderFilled style={{ color: "#ad8300" }} />
+        }
+        {rename.base.path}
+      </Space>))
     }
   </Ctx.Provider>
 }
