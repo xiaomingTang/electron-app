@@ -14,6 +14,9 @@ import {
 import {
   ReactSortable,
 } from "react-sortablejs"
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import lpFileNameSort from "lp-file-name-sort"
 
 import FilepathDroper from "@Renderer/components/FilepathDroper"
 import { ClipText } from "@Renderer/components/ClipText"
@@ -22,6 +25,10 @@ import {
   RenameConfig, RenameConfigElement, normalizeConfig, configToString,
 } from "./renameConfig"
 import Styles from "./index.module.less"
+
+function compareString(a: string, b: string): number {
+  return lpFileNameSort(a, b)
+}
 
 interface ListItem {
   id: string;
@@ -164,7 +171,7 @@ export default function RenameArea(): JSX.Element {
       <Divider />
       {/* 按文件名排序 */}
       <Button title="从小到大" disabled={paths.length === 0} onClick={() => {
-        pathsActions.sort((a, b) => a.localeCompare(b))
+        pathsActions.sort(compareString)
       }}>
         按文件名排序
       </Button>
@@ -174,9 +181,9 @@ export default function RenameArea(): JSX.Element {
           try {
             const statA = fs.statSync(a)
             const statB = fs.statSync(b)
-            return statA.birthtimeMs - statB.birthtimeMs
+            return statA.birthtimeMs - statB.birthtimeMs || compareString(a, b)
           } catch (error) {
-            return a.localeCompare(b)
+            return compareString(a, b)
           }
         })
       }}>
@@ -188,9 +195,9 @@ export default function RenameArea(): JSX.Element {
           try {
             const statA = fs.statSync(a)
             const statB = fs.statSync(b)
-            return statA.mtimeMs - statB.mtimeMs
+            return statA.mtimeMs - statB.mtimeMs || compareString(a, b)
           } catch (error) {
-            return a.localeCompare(b)
+            return compareString(a, b)
           }
         })
       }}>
@@ -202,9 +209,9 @@ export default function RenameArea(): JSX.Element {
           try {
             const statA = fs.statSync(a)
             const statB = fs.statSync(b)
-            return statA.size - statB.size
+            return statA.size - statB.size || compareString(a, b)
           } catch (error) {
-            return a.localeCompare(b)
+            return compareString(a, b)
           }
         })
       }}>
