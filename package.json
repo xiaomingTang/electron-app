@@ -38,13 +38,14 @@
     "proxy:rm": "npm config delete proxy && npm config delete https-proxy"
   },
   "dependencies": {
-    "antd": "^4.3.5",
+    "antd": "^4.4.0",
     "electron-reload": "^1.5.0",
     "fs-jetpack": "^2.1.0",
     "lodash": "^4.17.15",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
+    "react-sortablejs": "^2.0.11",
     "react-use": "^15.3.2",
     "tang-base-node-utils": "^1.2.4"
   },

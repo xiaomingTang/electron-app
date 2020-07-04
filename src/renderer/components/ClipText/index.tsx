@@ -30,7 +30,7 @@ export function ClipText({
   if (len < maxWidth - 3) {
     return <span
       {...props}
-      className={`${Styles.clipText} ${className}`}
+      className={`${Styles.clipText} ${Styles.wrapper} ${className}`}
       style={{
         ...style,
         [alwaysMaxWidth ? "width" : "maxWidth"]: `${maxWidth / 2}em`,
@@ -43,7 +43,7 @@ export function ClipText({
   const preWidth = Math.max(maxWidth - tailWidth, 0)
   const availableTailWidth = Math.min(maxWidth, tailWidth)
 
-  return <span {...props} className={className} style={style}>
+  return <span {...props} className={` ${Styles.wrapper} ${className}`} style={style}>
     <span
       className={Styles.clipText}
       style={{ [alwaysMaxWidth ? "width" : "maxWidth"]: `${preWidth / 2}em` }}

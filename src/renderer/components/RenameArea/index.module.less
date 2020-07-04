@@ -1,20 +1,28 @@
-.wrapper {
+.upload-area {
+  display: inline-block;
+  padding: 2em 4em;
+  border: 1px dashed #d9d9d9;
+  border-radius: 2px;
+  background-color: #fafafa;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #2295FF;
+  }
+}
+
+.rename-area {
   font-size: 14px;
   font-family: Consolas, Monaco, monospace;
 }
 
 .dirname {
   padding: 4px 8px;
+  white-space: nowrap;
   color: white;
   background-color: rgba(0, 0, 0, .4);
 }
 
-.input {
-  width: 10em;
-}
-
-.config-item {
-  width: 10em;
-  padding: 1em;
-  background-color: #eee;
+.drag-handler {
+  cursor: move;
 }

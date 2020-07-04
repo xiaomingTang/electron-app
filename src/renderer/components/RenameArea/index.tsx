@@ -1,188 +1,254 @@
-import React, {
-  useMemo, useState, useEffect, useCallback,
-} from "react"
+import React, { useMemo, useEffect } from "react"
+import { useList } from "react-use"
 import path from "path"
+import jetpack from "fs-jetpack"
+import fs from "fs"
+import { Base } from "tang-base-node-utils"
+import isEqual from "lodash/isEqual"
 import {
-  Space, Input, InputNumber, Checkbox, Button,
+  Button, Space, Divider, Modal, List, Collapse,
 } from "antd"
 import {
-  FileTextFilled, FolderFilled, EditOutlined,
+  PlusOutlined, FileTextFilled, FolderFilled, CloseOutlined, DragOutlined, CloseCircleOutlined,
 } from "@ant-design/icons"
-import { useUpdate, useList } from "react-use"
+import {
+  ReactSortable,
+} from "react-sortablejs"
 
+import FilepathDroper from "@Renderer/components/FilepathDroper"
 import { ClipText } from "@Renderer/components/ClipText"
 
-import Styles from "./index.module.less"
 import {
-  geneRename, Rename,
-} from "./rename"
+  RenameConfig, RenameConfigElement, normalizeConfig, configToString,
+} from "./renameConfig"
+import Styles from "./index.module.less"
 
-interface ConfigProps {
-  enabled: boolean;
-  start: number;
-  added: number;
-  zeroLength: number;
-  prefix: string;
-  suffix: string;
+interface ListItem {
+  id: string;
 }
 
-function useConfig({
-  enabled: defaultEnabled = false,
-  start: defaultStart = 0,
-  added: defaultAdded = 1,
-  zeroLength: defaultZeroLength = 1,
-  prefix: defaultPrefix = "",
-  suffix: defaultSuffix = "",
-} : Partial<ConfigProps>): [ConfigProps, JSX.Element] {
-  const [enabled, setEnabled] = useState(defaultEnabled)
-  const [start, setStart] = useState(defaultStart)
-  const [added, setAdded] = useState(defaultAdded)
-  const [zeroLength, setZeroLength] = useState(defaultZeroLength)
-  const [prefix, setPrefix] = useState(defaultPrefix)
-  const [suffix, setSuffix] = useState(defaultSuffix)
+export default function RenameArea(): JSX.Element {
+  const [errorMsgList, errorMsgListActions] = useList<string>([])
 
-  return [
+  const [paths, pathsActions] = useList<string>([])
+
+  const bases = useMemo(() => paths.map((p) => new Base(p)), [paths])
+
+  const sortList: ListItem[] = useMemo(() => paths.map((p) => ({ id: p })), [paths])
+  const setSortList = (newList: ListItem[]) => pathsActions.set(newList.map(({ id }) => id))
+
+  const [configs, configsAction] = useList<RenameConfig>([
+    { type: "name" },
+    { type: "staticString", value: "-" },
     {
-      enabled,
-      start,
-      added,
-      zeroLength,
-      prefix,
-      suffix,
+      type: "number", start: 1, added: 1, width: 1,
     },
-    <Space key={1} direction="vertical" className={`unselectable ${Styles.configItem}`}>
-      <div>
-        <Checkbox checked={enabled} onChange={(e) => setEnabled(e.target.checked)}>启用</Checkbox>
-      </div>
-      <div>
-        从
-        <InputNumber disabled={!enabled} style={{ width: "4em" }} value={start} onChange={(newVal) => {
-          if (typeof newVal === "number") {
-            setStart(newVal)
-          } else {
-            setStart(0)
-          }
-        }} />
-        开始
-      </div>
-      <div>
-        递增
-        <InputNumber disabled={!enabled} style={{ width: "4em" }} value={added} onChange={(newVal) => {
-          if (typeof newVal === "number") {
-            setAdded(newVal)
-          } else {
-            setAdded(0)
-          }
-        }} />
-      </div>
-      <div title={`小于等于${0}: 内容置空\n大于0: 前补0到指定长度\n长度计算时不计算前缀/后缀`}>
-        字符长度
-        <InputNumber disabled={!enabled} style={{ width: "4em", color: zeroLength <= 0 ? "orange" : "inherit" }} value={zeroLength} onChange={(newVal) => {
-          if (typeof newVal === "number") {
-            setZeroLength(newVal)
-          } else {
-            setZeroLength(0)
-          }
-        }} />
-      </div>
-      <div>
-        前缀
-        <Input disabled={!enabled} style={{ width: "4em" }} value={prefix} onChange={(e) => {
-          setPrefix(e.target.value || "")
-        }} />
-      </div>
-      <div>
-        后缀
-        <Input disabled={!enabled} style={{ width: "4em" }} value={suffix} onChange={(e) => {
-          setSuffix(e.target.value || "")
-        }} />
-      </div>
-    </Space>,
-  ]
-}
+    { type: "suffix" },
+  ])
 
-const configToString = (config: ConfigProps, i: number, defaultVal = "") => {
-  if (!config.enabled) { return defaultVal }
-  let s = `${config.start + config.added * i}`.padStart(config.zeroLength, "0")
-  if (config.zeroLength <= 0) { s = "" }
-  return `${config.prefix}${s}${config.suffix}`
-}
-
-interface Props {
-  paths: string[];
-}
-
-export default function RenameArea({ paths }: Props): JSX.Element {
-  const [namePrefixConfig, NamePrefixConfigElement] = useConfig({ enabled: true, zeroLength: 0 })
-  const [nameConfig, NameConfigElement] = useConfig({})
-  const [nameSuffixConfig, NameSuffixConfigElement] = useConfig({ enabled: true, zeroLength: 1, prefix: "-" })
-  const [suffixConfig, SuffixConfigElement] = useConfig({})
-
-  const [renames, renamesActions] = useList<Rename>(() => paths.map((p, i) => {
-    const rename = geneRename(p)
-    const { ext, name } = path.parse(rename.base.path)
-    rename.namePrefix = configToString(namePrefixConfig, i)
-    rename.name = configToString(nameConfig, i, name)
-    rename.nameSuffix = configToString(nameSuffixConfig, i)
-    rename.suffix = configToString(suffixConfig, i, ext)
-    return rename
-  }))
-
-  // const renames = useMemo(() => paths.map((p, i) => {
-  //   const rename = geneRename(p)
-  //   const { ext, name } = path.parse(rename.base.path)
-  //   rename.namePrefix = namePrefixConfig.enabled ? `${namePrefixConfig.start + namePrefixConfig.added * i}`.padStart(namePrefixConfig.zeroLength, "0") : ""
-  //   rename.name = nameConfig.enabled ? `${nameConfig.start + nameConfig.added * i}`.padStart(nameConfig.zeroLength, "0") : name
-  //   rename.nameSuffix = nameSuffixConfig.enabled ? `${nameSuffixConfig.start + nameSuffixConfig.added * i}`.padStart(nameSuffixConfig.zeroLength, "0") : ""
-  //   rename.suffix = suffixConfig.enabled ? `${suffixConfig.start + suffixConfig.added * i}`.padStart(suffixConfig.zeroLength, "0") : ext
-  //   return rename
-  // }), [
-  //   paths, namePrefixConfig, nameConfig, nameSuffixConfig, suffixConfig,
-  // ])
-
-  return <div className={Styles.wrapper}>
-    <Space align="end" style={{
-      marginBottom: "1em",
-    }}>
-      <Button type="primary" size="small" ghost>
-        <EditOutlined />
-      </Button>
-      <div className={Styles.dirname} style={{
-        color: "transparent",
-        backgroundColor: "transparent",
-      }}>
-        <ClipText text="" maxWidth={50} tailWidth={10} />
-        _
-      </div>
-      {NamePrefixConfigElement}
-      {NameConfigElement}
-      {NameSuffixConfigElement}
-      {SuffixConfigElement}
-    </Space>
-
-    {
-      renames.map((rename) => (<Space key={rename.base.path}>
-        <Button type="text" size="small">
-          {
-            rename.base.isFile
-              ? <FileTextFilled />
-              : <FolderFilled style={{ color: "#ad8300" }} />
-          }
-        </Button>
-
-        <div className={Styles.dirname}>
-          <ClipText text={rename.dirname} maxWidth={50} tailWidth={10} />
-          <span>{path.sep}</span>
-        </div>
-
-        <Input className={Styles.input} value={rename.namePrefix} placeholder="前缀" />
-
-        <Input className={Styles.input} value={rename.name} placeholder="文件名" />
-
-        <Input className={Styles.input} value={rename.nameSuffix} placeholder="后缀" />
-
-        <Input className={Styles.input} value={rename.suffix} placeholder="文件名后缀" />
-      </Space>))
+  useEffect(() => {
+    if (paths) {
+      const newPaths = paths.map((p) => path.normalize(p)).filter((p) => jetpack.exists(p) === "file")
+      if (!isEqual(newPaths, paths)) {
+        pathsActions.set(newPaths)
+      }
     }
-  </div>
+  }, [paths, pathsActions])
+
+  return <>
+    {/* 加载文件区 */}
+    <FilepathDroper setPaths={pathsActions.set} className={`${Styles.uploadArea} unselectable`}>
+      <div>点击选择或拖拽文件(夹)到此处</div>
+      <div>也可以直接拖拽路径字符串</div>
+    </FilepathDroper>
+    {/* 错误信息展示区 */}
+    {
+      errorMsgList.length > 0 && <Collapse>
+        <Collapse.Panel
+          header={`错误信息: ${errorMsgList.length}`}
+          key="error-msg"
+          extra={<CloseCircleOutlined
+            title="清空错误信息"
+            onClick={(e) => {
+              e.stopPropagation()
+              errorMsgListActions.clear()
+            }}
+          />}
+        >
+          {
+            errorMsgList.map((msg, i) => (<p key={i}>{i + 1}: {msg}</p>))
+          }
+        </Collapse.Panel>
+      </Collapse>
+    }
+    <Divider />
+    <div className={Styles.renameArea}>
+      {/* 文件名组成编辑 */}
+      <h5 className="unselectable">新文件名组成部分</h5>
+      {
+        configs.map((config, i) => (<RenameConfigElement
+          key={i}
+          config={config}
+          setConfig={(newItem) => configsAction.updateAt(i, normalizeConfig(newItem))}
+          onRemove={() => configsAction.removeAt(i)}
+          insertBefore={() => configsAction.insertAt(i, { type: "name" })}
+          insertAfter={() => configsAction.insertAt(i + 1, { type: "name" })}
+        />))
+      }
+      {
+        configs.length === 0 && <Button type="primary" onClick={() => {
+          configsAction.push({ type: "name" })
+        }}>
+          <PlusOutlined />
+        </Button>
+      }
+      <Divider />
+      {/* 操作区 */}
+      <h5 className="unselectable">操作</h5>
+      {/* 执行重命名 */}
+      <Button disabled={paths.length === 0} type="primary" onClick={() => {
+        const result = bases.map((base, idx) => {
+          const newName = configs.reduce((prev, config) => `${prev}${configToString(base.path, config, idx)}`, "")
+          return [
+            base.path,
+            path.join(base.dirname, newName),
+          ]
+        })
+
+        Modal.confirm({
+          title: "警告! 同名文件将直接覆盖!!!",
+          width: "700px",
+          content: <>
+            确定按如下执行重命名吗?
+            <List
+              style={{ height: "50vh", overflowY: "auto" }}
+              dataSource={result}
+              renderItem={(item) => (<div>
+                <Divider />
+                <div style={{ color: "#ff4949" }}>- {item[0]}</div>
+                <div style={{ color: "green" }}>+ {item[1]}</div>
+              </div>)}
+            />
+          </>,
+          okButtonProps: { danger: true },
+          okText: "重命名",
+          cancelText: "取消",
+          keyboard: true,
+          maskClosable: true,
+          onOk() {
+            let theErrorLength = 0
+            result.forEach(([origin, target]) => {
+              try {
+                jetpack.move(origin, target)
+              } catch (error) {
+                theErrorLength += 1
+                errorMsgListActions.push(error.message)
+              }
+            })
+            Modal.warning({
+              title: "执行完成",
+              content: <>
+                <div>总计重命名文件(夹)数: {paths.length}</div>
+                <div>重命名错误数: {theErrorLength}</div>
+                <div>即将更新页面</div>
+              </>,
+              onOk: () => {
+                pathsActions.push("")
+              },
+            })
+          },
+        })
+      }}>
+        根据如下所示, 对文件(夹)执行重命名
+      </Button>
+      <Divider />
+      {/* 按文件名排序 */}
+      <Button title="从小到大" disabled={paths.length === 0} onClick={() => {
+        pathsActions.sort((a, b) => a.localeCompare(b))
+      }}>
+        按文件名排序
+      </Button>
+      {/* 按创建时间排序 */}
+      <Button title="从小到大" disabled={paths.length === 0} onClick={() => {
+        pathsActions.sort((a, b) => {
+          try {
+            const statA = fs.statSync(a)
+            const statB = fs.statSync(b)
+            return statA.birthtimeMs - statB.birthtimeMs
+          } catch (error) {
+            return a.localeCompare(b)
+          }
+        })
+      }}>
+        按创建时间排序
+      </Button>
+      {/* 按最后修改时间排序 */}
+      <Button title="从小到大" disabled={paths.length === 0} onClick={() => {
+        pathsActions.sort((a, b) => {
+          try {
+            const statA = fs.statSync(a)
+            const statB = fs.statSync(b)
+            return statA.mtimeMs - statB.mtimeMs
+          } catch (error) {
+            return a.localeCompare(b)
+          }
+        })
+      }}>
+        按最后修改时间排序
+      </Button>
+      {/* 按文件大小排序 */}
+      <Button title="从小到大" disabled={paths.length === 0} onClick={() => {
+        pathsActions.sort((a, b) => {
+          try {
+            const statA = fs.statSync(a)
+            const statB = fs.statSync(b)
+            return statA.size - statB.size
+          } catch (error) {
+            return a.localeCompare(b)
+          }
+        })
+      }}>
+        按文件大小排序
+      </Button>
+      <Divider />
+      <h5 className="unselectable">预览 [{paths.length}]</h5>
+      <ReactSortable list={sortList} setList={setSortList} handle={`.${Styles.dragHandler}`}>
+        {
+          bases.map((base, idx) => (<div key={base.path} style={{ margin: ".5em 0" }}>
+            <Space>
+              <Button title="上下拖拽排序" type="text" size="small" className={Styles.dragHandler}>
+                {
+                  base.isFile
+                    ? <FileTextFilled />
+                    : <FolderFilled style={{ color: "#ad8300" }} />
+                }
+                <DragOutlined />
+              </Button>
+
+              <div title={`父目录: ${base.dirname}`} className={Styles.dirname}>
+                <ClipText text={base.dirname} maxWidth={50} tailWidth={10} />
+                <span>{path.sep}</span>
+              </div>
+
+              {
+                configs.map((config, key) => {
+                  const text = configToString(base.path, config, idx) || "\u00A0"
+                  return <div key={key} className={Styles.dirname} title={text}>
+                    <ClipText
+                      text={text}
+                      maxWidth={config.type === "name" ? 20 : 10}
+                      tailWidth={4}
+                    />
+                  </div>
+                })
+              }
+              <Button title="移除该项" danger size="small" onClick={() => pathsActions.removeAt(idx)}>
+                <CloseOutlined />
+              </Button>
+            </Space>
+          </div>))
+        }
+      </ReactSortable>
+    </div>
+  </>
 }
