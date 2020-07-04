@@ -1,7 +1,7 @@
 import path from "path"
 import { Base } from "tang-base-node-utils"
 
-export default class Rename {
+export class Rename {
   base: Base
 
   /**
@@ -49,4 +49,15 @@ export default class Rename {
     ].join("")
     return path.join(this.dirname, newName)
   }
+}
+
+const renameMap: Record<string, Rename> = {}
+
+export function geneRename(p: string): Rename {
+  if (!renameMap[p]) {
+    const newRename = new Rename(p)
+    renameMap[p] = newRename
+    return newRename
+  }
+  return renameMap[p]
 }
