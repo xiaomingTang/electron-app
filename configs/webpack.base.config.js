@@ -3,6 +3,7 @@ const nodeExternals = require("webpack-node-externals")
 const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin")
 const tsImportPluginFactory = require("ts-import-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
+const CopyWebpackPlugin = require("copy-webpack-plugin")
 
 const definePlugin = require("./injectEnv")
 const Paths = require("./paths")
@@ -103,5 +104,13 @@ module.exports = {
       chunks: ["app"],
       hash: true,
     }),
-  ]
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: Paths.Static,
+          to: path.join(Paths.Output, "static"),
+        },
+      ],
+    }),
+  ],
 }
