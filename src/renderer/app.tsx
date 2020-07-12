@@ -218,7 +218,9 @@ function Home() {
           }
         }}
       >
-        要喝水了...
+        <span style={{ color: "red" }}>
+          时间到了!!!
+        </span>
       </TimerTo>
     </Space>
   </>
