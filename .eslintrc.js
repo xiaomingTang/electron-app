@@ -25,6 +25,7 @@ module.exports = {
     }
   },
   rules: {
+    "react/prop-types": "off",
     // windows风格的换行(而非unix)
     "linebreak-style": ["error", "windows"],
     "import/extensions": "off",
