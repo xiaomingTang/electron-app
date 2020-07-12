@@ -1,15 +1,15 @@
 {
-  "name": "electron-boilerplate",
-  "productName": "Electron Boilerplate",
-  "description": "Starter for your Electron application",
-  "version": "0.0.0",
+  "name": "naozhong",
+  "productName": "定时闹钟",
+  "description": "",
+  "version": "0.0.1",
   "private": true,
   "author": "Mr. Gumby <mr.gumby@example.com>",
   "copyright": "© 2017, Gumby inc.",
   "homepage": "http://example.com",
   "main": ".app/background.js",
   "build": {
-    "appId": "com.example.electron-boilerplate",
+    "appId": "com.naozhong.electron-boilerplate",
     "files": [
       ".app/**/*",
       "node_modules/**/*",
@@ -40,7 +40,9 @@
   "dependencies": {
     "antd": "^4.3.5",
     "electron-reload": "^1.5.0",
+    "electron-store": "^5.2.0",
     "fs-jetpack": "^2.1.0",
+    "lodash-es": "^4.17.15",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
@@ -48,11 +50,13 @@
     "tang-base-node-utils": "^1.2.2"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.3",
     "@types/react": "^16.9.39",
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.5",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
+    "copy-webpack-plugin": "^6.0.3",
     "cross-env": "^7.0.2",
     "css-loader": "^3.1.0",
     "electron": "^8.2.3",
