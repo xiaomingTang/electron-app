@@ -99,7 +99,7 @@ module.exports = {
     new HtmlWebpackPlugin({ // Home
       template: path.join(Paths.Public, "app.html"),
       filename: "app.html",
-      title: "Home",
+      title: "文件重命名",
       inject: "body",
       chunks: ["app"],
       hash: true,
