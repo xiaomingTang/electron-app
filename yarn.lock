@@ -1977,10 +1977,10 @@ electron-reloader@^1.0.1:
     electron-is-dev "^1.1.0"
     find-up "^4.1.0"
 
-electron@^8.2.3:
-  version "8.3.3"
-  resolved "https://registry.npm.taobao.org/electron/download/electron-8.3.3.tgz#8ce07dcbafa097d00b94d1dd58a2a3b30fe6f803"
-  integrity sha1-jOB9y6+gl9ALlNHdWKKjsw/m+AM=
+electron@^8.5.2:
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-8.5.2.tgz#7b0246c6676a39df0e5e384b11cfe854fe5917f0"
+  integrity sha512-VU+zZnmCzxoZ5UfBg2UGVm+nyxlNlQOQkotMLfk7FCtnkIOhX+sosl618OCxUWjOvPc+Mpg5MEkEmxPU5ziW4Q==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^12.0.12"
